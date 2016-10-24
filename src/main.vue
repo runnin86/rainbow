@@ -1,0 +1,172 @@
+<template>
+  <div class="page page-current">
+      <router-view transition-mode="out-in"></router-view>
+      <!-- <router-view transition-mode="out-in" keep-alive></router-view> -->
+  </div>
+</template>
+
+<script>
+import Bar from './components/Bar'
+import BarItem from './components/BarItem'
+// import {wxShareConfig} from './util/util'
+import $ from 'zepto'
+import wx from 'wx'
+
+export default {
+  ready () {
+    // 微信配置参数
+    $.sign = {
+      appId: 'wxadccc645716a9348',
+      timestamp: Date.parse(new Date()),
+      nonceStr: this.randomString(32),
+      signature: '{sign.signature}'
+    }
+
+    let wxJsApi = [
+      'onMenuShareTimeline',
+      'onMenuShareAppMessage',
+      'onMenuShareQQ',
+      'onMenuShareWeibo',
+      'onMenuShareQZone'
+    ]
+    // 微信配置
+    wx.config({
+      debug: false,
+      appId: $.sign.appId, // 必填，公众号的唯一标识
+      timestamp: $.sign.timestamp, // 必填，生成签名的时间戳
+      nonceStr: $.sign.nonceStr, // 必填，生成签名的随机串
+      signature: $.sign.signature, // 必填，签名，见附录1
+      jsApiList: wxJsApi // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+    })
+    // 微信错误打印
+    wx.error((res) => {
+      /*
+       * config信息验证失败会执行error函数，如签名过期导致验证失败，
+       * 具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，
+       * 对于SPA可以在这里更新签名。
+       */
+      console.log(res)
+    })
+    // 在需要配置分享内容的时候调用
+    // wxShareConfig('123')
+    // if (window.localStorage.getItem('imageSwitch') === null) {
+    window.localStorage.setItem('imageSwitch', true)
+    // }
+  },
+  data () {
+    return {
+      isIndex: true
+    }
+  },
+  methods: {
+    back () {
+      // $.router.back()
+      window.history.back()
+      // window.history.go(-1)
+    },
+    randomString (len) {
+      // 默认去掉了容易混淆的字符oOLl,9gq,Vv,Uu,I1
+      let $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678'
+      let maxPos = $chars.length
+      let pwd = ''
+      for (let i = 0; i < len; i++) {
+        pwd += $chars.charAt(Math.floor(Math.random() * maxPos))
+      }
+      return pwd
+    }
+  },
+  components: {
+    Bar,
+    BarItem
+  }
+}
+</script>
+
+<style>
+@import './assets/css/sm.css';
+[v-cloak] {
+  display: none;
+}
+.barHeight {
+  background: #efeff4;
+  height: 3rem;
+  /*position: relative;*/
+  box-shadow: 0 .01rem .05rem rgba(0,0,0,.3);
+}
+.barHeight .tab-item {
+  height: 3rem;
+  background-color: #1e2126;
+}
+
+/*
+ 平滑切入
+ */
+.fade-transition {
+  transition: opacity .1s ease;
+}
+.fade-enter, .fade-leave {
+  opacity: 0;
+}
+
+/*
+ 从右至左切入
+ */
+.bounce-enter {
+  animation: bounce-in .5s;
+}
+.bounce-leave {
+  animation: bounce-out .5s;
+}
+
+@keyframes bounce-in {
+  0% {
+		opacity: 0;
+		-webkit-transform: translateX(100%);
+	}
+	100% {
+		opacity: 1;
+		-webkit-transform: translateX(0);
+	}
+}
+@keyframes bounce-out {
+  0% {
+		opacity: 0;
+		-webkit-transform: translateX(0);
+	}
+	100% {
+		opacity: 1;
+		-webkit-transform: translateX(100%);
+	}
+}
+
+/*
+ 从下至上切入
+ */
+.pushtop-enter {
+  animation: pushtop-in .6s;
+}
+.pushtop-leave {
+  animation: pushtop-out .3s;
+}
+
+@keyframes pushtop-in {
+  0% {
+		opacity: 0;
+		-webkit-transform: translateY(100%);
+	}
+	100% {
+		opacity: 1;
+		-webkit-transform: translateY(0);
+	}
+}
+@keyframes pushtop-out {
+  0% {
+		opacity: 0;
+		-webkit-transform: translateY(0);
+	}
+	100% {
+		opacity: 1;
+		-webkit-transform: translateY(100%);
+	}
+}
+</style>
