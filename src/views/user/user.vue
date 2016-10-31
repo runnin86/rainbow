@@ -3,7 +3,8 @@
   <!-- 防止ios自动获取电话号码 -->
   <meta name = "format-detection" content = "telephone=no">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <div class="content" transition="">
+  <div class="content" transition="" v-pull-to-refresh="refresh">
+    <v-layer></v-layer>
     <!-- 顶部操作栏 -->
     <div class="header blue_bg width_full">
       <img src="/img/rainbow/return-btn.png" v-link="{path: '/home', replace: true}">
@@ -70,6 +71,7 @@
 <script>
 import $ from 'zepto'
 import {api} from '../../util/service'
+import VLayer from '../../components/PullToRefreshLayer'
 
 export default {
   ready () {
@@ -90,6 +92,22 @@ export default {
   methods: {
     doWT () {
       $.toast('敬请期待!')
+    },
+    /*
+     * 刷新
+     */
+    refresh () {
+      if (this.user) {
+        $.showIndicator()
+        // 执行查询
+        setTimeout(function () {
+          // 获取账户信息
+          this.getUserAccount()
+          // 加载完毕需要重置
+          $.pullToRefreshDone('.pull-to-refresh-content')
+          $.hideIndicator()
+        }.bind(this), 800)
+      }
     },
     /*
      * 获取账户信息
@@ -135,6 +153,9 @@ export default {
         console.error('用户退出失败:' + e)
       })
     }
+  },
+  components: {
+    VLayer
   }
 }
 </script>
