@@ -21,6 +21,41 @@ export default function (router) {
       component (resolve) {
         require(['./views/home/home'], resolve)
       }
+    },
+    '/buy': {
+      component (resolve) {
+        require(['./views/home/buy'], resolve)
+      }
+    },
+    '/user': {
+      component (resolve) {
+        require(['./views/user/user'], resolve)
+      }
+    },
+    '/login': {
+      component (resolve) {
+        require(['./views/user/login'], resolve)
+      }
+    },
+    '/order': {
+      component (resolve) {
+        require(['./views/user/order'], resolve)
+      }
+    },
+    '/bill': {
+      component (resolve) {
+        require(['./views/user/bill'], resolve)
+      }
+    },
+    '/withdrawal': {
+      component (resolve) {
+        require(['./views/user/withdrawal'], resolve)
+      }
+    },
+    '/complete': {
+      component (resolve) {
+        require(['./views/user/complete'], resolve)
+      }
     }
   })
 
