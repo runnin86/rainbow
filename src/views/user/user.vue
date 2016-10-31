@@ -32,7 +32,8 @@
         </span>
       </div>
       <div class="withdrawal_btn">
-        <span v-link="{path: '/withdrawal', replace: true}">
+        <!-- <span v-link="{path: '/withdrawal', replace: true}"> -->
+        <span @click="doWT()">
           提现
         </span>
       </div>
@@ -87,6 +88,9 @@ export default {
     }
   },
   methods: {
+    doWT () {
+      $.toast('敬请期待!')
+    },
     /*
      * 获取账户信息
      */
