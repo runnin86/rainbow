@@ -27,10 +27,17 @@
       <div class="login"
         :class="this.showTabs===1?'':'module_hide'">
         <div class="login_input">
-          <input id="phone" type="text" name="phone" v-model="userPhone" placeholder="请输入手机号">
-          <input id="pass_word" type="passWord" name="pass_word" v-model="password" placeholder="请输入密码">
+          <input type="tel" v-model="userPhone" class="rb_phone" placeholder="请输入手机号">
+          <a class="clear" style="margin-left: 77%;"
+            :style="{display: userPhone?'block':'none'}"
+            @click="this.userPhone=null"></a>
+          <input type="password" v-model="password" class="rb_password" placeholder="请输入密码">
+          <a class="clear" style="margin-left: 77%;"
+            :style="{display: password?'block':'none'}"
+            @click="this.password=null"></a>
         </div>
-        <div class="login_btn blue_bg" @click="login ()">
+        <div class="login_btn blue_bg" @click="login()"
+          :style="{backgroundColor: (loginSubmit ? '' : '#c8c9cb')}">
           <span>登录</span>
         </div>
       </div>
@@ -55,61 +62,117 @@
 </template>
 
 <script>
-  import $ from 'zepto'
+import $ from 'zepto'
+import {api} from '../../util/service'
 
-  export default {
-    ready () {
-      $.init()
+export default {
+  ready () {
+    $.init()
+  },
+  data () {
+    return {
+      showTabs: 1,
+      userPhone: window.localStorage.getItem('rbPhone') ? window.localStorage.getItem('rbPhone') : '',
+      password: '',
+      loginSubmit: false,
+      upass: null,
+      alipayid: null,
+      protocol: true,
+      submitBtn: false
+    }
+  },
+  methods: {
+    /*
+     * 登录
+     */
+    login () {
+      window.localStorage.setItem('rbPhone', this.userPhone)
+      if (!this.userPhone || !this.password) {
+        $.toast('请输入手机号或密码')
+        return
+      }
+      $.showIndicator()
+      let spcarInfos = {
+        'uphone': this.userPhone,
+        'upass': this.password,
+        'code': this.code ? this.code : '123'
+      }
+      // let postBody = JSON.stringify(spcarInfos)
+      this.$http.post(api.login, spcarInfos, {
+        emulateJSON: true
+      })
+      .then(({data: {data, code, msg}})=>{
+        if (code === 1) {
+          if (data) {
+            if (data.user.userStatus === 0) {
+              $.toast('账户禁用')
+            }
+            else if (data.user.userStatus === 1) {
+              window.localStorage.setItem('rbUser', JSON.stringify(data.user))
+              window.localStorage.setItem('rbToken', data.token)
+              window.localStorage.setItem('rbOpenid', data.openid)
+              this.$route.router.go({path: '/home', replace: true})
+            }
+          }
+        }
+        $.toast(msg)
+      }).catch((e)=>{
+        $.alert('服务器连接中断...')
+        console.error('无法连接服务器:' + e)
+      }).finally(()=>{
+        $.hideIndicator()
+      })
     },
-    data () {
-      return {
-        showTabs: 1,
-        uphone: null,
-        uname: null,
-        upass: null,
-        alipayid: null,
-        protocol: true,
-        submitBtn: false
+    /*
+     * 注册
+     */
+    register () {
+      if (!this.uphone) {
+        $.toast('请输入手机号')
+        return
+      }
+      else if (!(/^1[34578]\d{9}$/.test(this.uphone)))
+      {
+        $.toast('请输入正确的手机号')
+        return
+      }
+      if (!this.alipayid) {
+        $.toast('请输入支付宝账号')
+        return
+      }
+      else if (!(/^1[34578]\d{9}$/.test(this.alipayid) || (/^[_\.0-9a-z-]+@([0-9a-z][0-9a-z-]+\.){1,4}[a-z]{2,3}$/.test(this.alipayid))))
+      {
+        $.toast('请输入正确的付宝账号')
+        return
+      }
+      if (!this.uname) {
+        $.toast('请输入姓名')
+        return
+      }
+      if (!this.upass) {
+        $.toast('请输入密码')
+        return
+      }
+      if (!this.protocol) {
+        // $.toast('您未同意本平台用户条款')
+        return
+      }
+      this.submitBtn = false
+    }
+  },
+  watch: {
+    'userPhone,password': {
+      handler: function (newVal, oldVal) {
+        this.loginSubmit = this.userPhone && this.password
       }
     },
-    login () {
-    },
-    methods: {
-      register () {
-        if (!this.uphone) {
-          $.toast('请输入手机号')
-          return
-        }
-        else if (!(/^1[34578]\d{9}$/.test(this.uphone)))
-        {
-          $.toast('请输入正确的手机号')
-          return
-        }
-        if (!this.alipayid) {
-          $.toast('请输入支付宝账号')
-          return
-        }
-        else if (!(/^1[34578]\d{9}$/.test(this.alipayid) || (/^[_\.0-9a-z-]+@([0-9a-z][0-9a-z-]+\.){1,4}[a-z]{2,3}$/.test(this.alipayid))))
-        {
-          $.toast('请输入正确的付宝账号')
-          return
-        }
-        if (!this.uname) {
-          $.toast('请输入姓名')
-          return
-        }
-        if (!this.upass) {
-          $.toast('请输入密码')
-          return
-        }
-        if (!this.protocol) {
-          // $.toast('您未同意本平台用户条款')
-          return
-        }
-        this.submitBtn = false
+    'forgetPhone,vCode,newPwd': {
+      handler: function (newVal, oldVal) {
+        this.forgetSubmit = this.forgetPhone && this.vCode && this.newPwd
       }
     }
   }
+}
 </script>
 
 <style scoped>
@@ -215,5 +278,27 @@ span,img{
   color: #666666;
   float: left;
   margin-left: 0.2rem;
+}
+.rb_phone,.rb_password{
+  padding-left: 0.5rem;
+  font-size: 0.7rem;
+  width: 94%;
+  border: none;
+  background-color: #f5f5f5;
+  height: 2.5rem;
+  margin: 0.475rem 3%;
+  border-radius: 0;
+}
+.clear{
+  background:no-repeat center center url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACoAAAAqCAMAAADyHTlpAAAAflBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACCtoPsAAAAKnRSTlMAAQIDBAUHCQoLDA0ODxASGhscHR4fICEiIyQlJicoKSorLC0uLzAxMjOWCMFEAAABUklEQVR4Xo3U4W6CMBSG4a8dcyo4FUVAHCpa4bv/G1xiOJm1B9j7+0lz0rQHfibZlFeSzbnYriyGm2cPvtTmMfS+KgbVSwWatKPWIRgjOnGgy8yXXzcO5mJPPjhS9w0JUcPR2oVI88OJblFPUwH3YEyxeX/xckuFLXx5tLnY5EmPIg1M4UkDI/b8PLSXjQHEigSsDLUCkLEvhdg/aUr2lYB1DKwi2UVYkoFVJLnGhpqtAsk9SipWkaxxpWIVSQdHxSqSRMfAipyklZF7eAtOkbrFVZHquQ6lL+1zzlSxNTaKJBW7x1KTml3DulBqtouALJCqLV+e9l2kZ72njUpWjhEp9uXUi/8ND1ak2F7KocBu8HM3Igt5RPW/Vwai+/Qikubt9HqTFmNLM4HX5+C8zQxv2V2nyvwDYbMihNUceovMu4pHHmOkeFudHdmeT2lifPALZUK7MQNh4w4AAAAASUVORK5CYII=);
+  background-size: 15px 15px;
+  width:40px;
+  height:40px;
+  position: absolute;
+  margin-top: -2.2rem;
+  margin-right: 1rem;
+  margin-bottom: 0;
+  /*margin: -2.76rem 0.2rem 0 86%;*/
+  /*display: none;*/
 }
 </style>

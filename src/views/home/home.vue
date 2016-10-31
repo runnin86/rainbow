@@ -35,7 +35,7 @@
     <!-- 进度条 -->
     <div class="progress blue_bg width_full">
       <div class="progress_bar o_h">
-        <div class="value" :style="{width:}">
+        <div class="value">
         </div>
       </div>
       <div class="mark o_h">
