@@ -62,11 +62,11 @@
           <li>日期</li>
           <li>状态</li>
         </ul>
-        <ul>
+        <!-- <ul>
           <li>880.00</li>
           <li>10/17</li>
           <li>提现申请已提交</li>
-        </ul>
+        </ul> -->
       </div>
     </div>
   </div>
@@ -108,7 +108,6 @@ export default {
         }
       })
       .then(({data: {code, data, msg}})=>{
-        console.log(data)
         if (code === 1) {
           this.profitList = data.profit
           this.purchaseList = data.purchase
