@@ -6,10 +6,8 @@
   <div class="content" transition="">
     <!-- 顶部操作栏 -->
     <div class="header blue_bg width_full">
-      <img src="/img/rainbow/return-btn.png"
-        v-link="{path: '/home', replace: true}">
-      <img src="/img/rainbow/exit-icon.png"
-        @click="this.showTabs = 2">
+      <img src="/img/rainbow/return-btn.png" v-link="{path: '/home', replace: true}">
+      <img src="/img/rainbow/exit-icon.png" @click="this.showExit=true">
     </div>
 
     <!-- 用户信息 -->
@@ -18,20 +16,25 @@
         <img src="/img/rainbow/user-photo.png">
       </div>
       <div class="user_name">
-        <span>15662333355</span>
-        <span>殷召峰</span>
+        <span>{{user.userPhone}}</span>
+        <span>{{user.userName?user.userName:user.userPhone}}</span>
       </div>
     </div>
 
     <!-- 提现 -->
     <div class="withdrawal white_bg text_color width_full">
       <div class="withdrawal_text">
-        <span>可提现</br><font color="#cbcbcb" size="3">2000.00</font></span>
+        <span>
+          可提现</br>
+          <font color="#cbcbcb" size="3">
+            {{userAccount?userAccount:0}}
+          </font>
+        </span>
       </div>
       <div class="withdrawal_btn">
-        <span
-          v-link="{path: '/withdrawal', replace: true}">
-        提现</span>
+        <span v-link="{path: '/withdrawal', replace: true}">
+          提现
+        </span>
       </div>
     </div>
 
@@ -53,33 +56,83 @@
       </div>
     </div>
   </div>
-  <div
-    :class="this.showTabs===2?'eject':'module_hide'"
-    :class="this.showTabs===3?'eject':'module_hide'">
+  <div :class="this.showExit?'eject':'module_hide'">
     <div class="window">
-      <span>退出登陆?</span>
-      <span
-        @click="this.showTabs = 3">
-      取消</span>
+      <span @click="logout(this.$route.router)">退出登录?</span>
+      <span @click="this.showExit=false">
+        取消
+      </span>
     </div>
   </div>
 </template>
 
 <script>
-  import $ from 'zepto'
+import $ from 'zepto'
+import {api} from '../../util/service'
 
-  export default {
-    ready () {
-      $.init()
+export default {
+  ready () {
+    $.init()
+    if (this.user) {
+      // 获取账户信息
+      this.getUserAccount()
+    }
+  },
+  data () {
+    return {
+      showExit: false,
+      user: JSON.parse(window.localStorage.getItem('rbUser')),
+      userAccount: '-',
+      userFrozeAccount: '-'
+    }
+  },
+  methods: {
+    /*
+     * 获取账户信息
+     */
+    getUserAccount () {
+      let token = window.localStorage.getItem('rbToken')
+      this.$http.get(api.userCenter, {}, {
+        headers: {
+          'x-token': token
+        }
+      })
+      .then(({data: {data, code, msg}})=>{
+        if (code === 1) {
+          this.userAccount = data.UserAccount
+        }
+        else {
+          $.toast(msg)
+        }
+      }).catch((e)=>{
+        console.error('获取账户信息失败:' + e)
+      })
     },
-    data () {
-      return {
-        showTabs: 1
-      }
-    },
-    methods: {
+    /*
+     * 退出
+     */
+    logout (route) {
+      let token = window.localStorage.getItem('rpToken')
+      this.$http.delete(api.logout, {}, {
+        headers: {
+          'x-token': token
+        },
+        emulateJSON: true
+      })
+      .then(({data: {data, code, msg}})=>{
+        if (code === 1) {
+          window.localStorage.removeItem('rbUser')
+          window.localStorage.removeItem('rbToken')
+          window.localStorage.removeItem('rbOpenid')
+          route.go({path: '/oauth', replace: true})
+        }
+        $.toast(msg)
+      }).catch((e)=>{
+        console.error('用户退出失败:' + e)
+      })
     }
   }
+}
 </script>
 
 <style scoped>
