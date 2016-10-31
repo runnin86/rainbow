@@ -110,20 +110,45 @@
 </template>
 
 <script>
-  import $ from 'zepto'
+import $ from 'zepto'
+import {api} from '../../util/service'
 
-  export default {
-    ready () {
-      $.init()
-    },
-    data () {
-      return {
-        showTabs: 1
-      }
-    },
-    methods: {
+export default {
+  ready () {
+    $.init()
+    // 获取信息
+    this.getInfo()
+  },
+  data () {
+    return {
+      showTabs: 1
+    }
+  },
+  methods: {
+    /*
+     * 获取信息
+     */
+    getInfo () {
+      let token = window.localStorage.getItem('rbToken')
+      this.$http.post(api.mainInfo, {}, {
+        headers: {
+          'x-token': token
+        }
+      })
+      .then(({data: data})=>{
+        console.log(data)
+        // if (code === 1) {
+        //   this.userAccount = data.UserAccount
+        // }
+        // else {
+        //   $.toast(msg)
+        // }
+      }).catch((e)=>{
+        console.error('获取主页主要信息失败:' + e)
+      })
     }
   }
+}
 </script>
 
 <style scoped>
