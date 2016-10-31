@@ -22,19 +22,23 @@
       </div>
     </div>
     <div class="order_box white_bg width_full o_h">
+      <!-- 购买 -->
       <div class="buy text_color width_full o_h"
         :class="this.showTabs===1?'':'module_hide'">
-        <ul>
-          <li>金额</li>
-          <li>日期</li>
-          <li>产品名称</li>
-        </ul>
-        <ul>
-          <li>2000.00</li>
-          <li>10/24</li>
-          <li>中盛阳光001彩红计划</li>
-        </ul>
+          <ul>
+            <li>金额</li>
+            <li>日期</li>
+            <li>产品名称</li>
+          </ul>
+          <div v-for="p in purchaseList | orderBy 'SubDate' -1" track-by="$index">
+            <ul>
+              <li>{{p.SubAmount | currency ''}}</li>
+              <li>{{p.SubDate | dataFilter 'MM/dd'}}</li>
+              <li>{{p.Name}}</li>
+            </ul>
+          </div>
       </div>
+      <!-- 盈利 -->
       <div class="profit text_color width_full o_h"
         :class="this.showTabs===2?'':'module_hide'">
         <ul>
@@ -42,12 +46,15 @@
           <li>日期</li>
           <li>产品名称</li>
         </ul>
-        <ul>
-          <li>1220.00</li>
-          <li>10/12</li>
-          <li>中盛阳光001彩红计划</li>
-        </ul>
+        <div v-for="pl in profitList | orderBy 'SubDate' -1" track-by="$index">
+          <ul>
+            <li>{{pl.Profit | currency ''}}</li>
+            <li>{{pl.SubDate | dataFilter 'MM/dd'}}</li>
+            <li>{{pl.Name}}</li>
+          </ul>
+        </div>
       </div>
+      <!-- 提现 -->
       <div class="withdrawal text_color width_full o_h"
         :class="this.showTabs===3?'':'module_hide'">
         <ul>
@@ -66,20 +73,56 @@
 </template>
 
 <script>
-  import $ from 'zepto'
+import $ from 'zepto'
+import Vue from 'vue'
+import {dateFormat} from '../../util/util'
+import {api} from '../../util/service'
 
-  export default {
-    ready () {
-      $.init()
-    },
-    data () {
-      return {
-        showTabs: 1
-      }
-    },
-    methods: {
+Vue.filter('dataFilter', function (value, format) {
+  return dateFormat(new Date(value), format)
+})
+
+export default {
+  ready () {
+    $.init()
+    this.getBill()
+  },
+  data () {
+    return {
+      showTabs: 1,
+      profitList: [],
+      purchaseList: [],
+      withdrawList: []
+    }
+  },
+  methods: {
+    /*
+     * 获取账单
+     */
+    getBill () {
+      let token = window.localStorage.getItem('rbToken')
+      // 获取跟单选购列表
+      this.$http.get(api.userBill, {}, {
+        headers: {
+          'x-token': token
+        }
+      })
+      .then(({data: {code, data, msg}})=>{
+        console.log(data)
+        if (code === 1) {
+          this.profitList = data.profit
+          this.purchaseList = data.purchase
+          this.withdrawList = data.withdraw
+        }
+        else {
+          $.toast(msg)
+        }
+      }).catch((e)=>{
+        console.error('获取我的账单失败:' + e)
+      })
     }
   }
+}
 </script>
 
 <style scoped>
