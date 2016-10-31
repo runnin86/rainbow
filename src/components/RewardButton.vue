@@ -64,7 +64,7 @@ export default {
           },
           {
             headers: {
-              'x-token': window.localStorage.getItem('elToken')
+              'x-token': window.localStorage.getItem('rbToken')
             },
             emulateJSON: true
           })
