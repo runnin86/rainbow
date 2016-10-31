@@ -8,39 +8,73 @@
     <div class="header blue_bg width_full">
       <img src="/img/rainbow/return-btn.png"
         v-link="{path: '/user', replace: true}">
-      <span>中盛阳光001彩红计划</span>
+      <span>{{order.Name}}</span>
     </div>
 
     <!-- 产品进行状态 -->
     <div class="order_box blue_bg width_full">
       <span>总金额(元)</span>
-      <span>2000.00</span>
-      <span>产品收益(元)<font color="white">&nbsp0.00&nbsp</font>剩余9天</span>
+      <span>{{order.totalMount}}</span>
+      <span>
+        产品收益(元)
+        <font color="white">
+        &nbsp{{order.acProfit * order.totalMount | currency ''}}&nbsp
+        </font>
+        剩余{{order.lastdays}}天
+      </span>
     </div>
 
     <!-- 专家操盘记录 -->
     <div class="record">
       <span>专家操盘记录</span>
       <span>上传日期&nbsp2016/10/27&nbsp11:22</span>
-      <img src="">
+      <!-- <img src=""> -->
     </div>
   </div>
 </template>
 
 <script>
-  import $ from 'zepto'
+import $ from 'zepto'
+import {api} from '../../util/service'
 
-  export default {
-    ready () {
-      $.init()
-    },
-    data () {
-      return {
-      }
-    },
-    methods: {
+export default {
+  ready () {
+    $.init()
+    this.getOrder()
+  },
+  data () {
+    return {
+      pid: this.$route.query.pid,
+      order: []
+    }
+  },
+  methods: {
+    /*
+     * 获取账户信息
+     */
+    getOrder () {
+      let token = window.localStorage.getItem('rbToken')
+      this.$http.post(api.operateRecords, {
+        pid: this.pid
+      }, {
+        headers: {
+          'x-token': token
+        }
+      })
+      .then(({data: {code, data, msg}})=>{
+        if (code === 1) {
+          this.order = data
+          console.log(data.operateRecords)
+        }
+        else {
+          $.toast(msg)
+        }
+      }).catch((e)=>{
+        console.error('获取计划详情信息失败:' + e)
+      })
     }
   }
+}
 </script>
 
 <style scoped>

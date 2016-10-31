@@ -52,8 +52,9 @@
         <span>购买记录</span>
       </div>
       <div class="order_list text_color"
-        v-link="{path: '/order', replace: true}">
-        <span>中盛阳光001彩红计划</span>
+        v-link="{path: '/order', replace: true, query:{pid: s.Pid}}"
+        v-for="s in subList | orderBy 'Status'" track-by="$index">
+        <span>{{s.Name}}</span>
         <span>查看</span>
       </div>
     </div>
@@ -86,7 +87,8 @@ export default {
       showExit: false,
       user: JSON.parse(window.localStorage.getItem('rbUser')),
       userAccount: '-',
-      userFrozeAccount: '-'
+      userFrozeAccount: '-',
+      subList: []
     }
   },
   methods: {
@@ -122,6 +124,7 @@ export default {
       .then(({data: {data, code, msg}})=>{
         if (code === 1) {
           this.userAccount = data.UserAccount
+          this.subList = data.subList
         }
         else {
           $.toast(msg)
