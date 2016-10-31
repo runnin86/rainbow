@@ -7,7 +7,7 @@
     <v-layer></v-layer>
     <!-- 顶部操作栏 -->
     <div class="header width_full">
-      <span class="header_title blue_bg width_full">中盛阳光001彩红计划</span>
+      <span class="header_title blue_bg width_full">{{info.NAME}}</span>
       <img class="user_photo" src="/img/rainbow/user_photo_round.png"
         v-link="{path: '/user', replace: true}">
     </div>
@@ -15,21 +15,21 @@
     <!-- 预期收益率 -->
     <div class="expect blue_bg width_full">
       <span class="expect_title">预期收益率(%)</span>
-      <span class="expect_number">30.00</span>
+      <span class="expect_number">{{info.exReturn | currency ''}}</span>
     </div>
 
     <!-- 购买条件 -->
     <div class="condition blue_bg width_full">
       <div class="cycle">
         <span>周期(天)</span>
-        <span>10</span>
+        <span>{{info.exDays}}</span>
       </div>
       <div class="condition_line o_h">
         &nbsp
       </div>
       <div class="minimum">
         <span>起购(元)</span>
-        <span>1000.00</span>
+        <span>{{info.minSubAmount | currency ''}}</span>
       </div>
     </div>
 
@@ -40,8 +40,18 @@
         </div>
       </div>
       <div class="mark o_h">
-        <span>·总额<font color="white">100000.00</font></span>
-        <span>·剩余<font color="white">0.00</font></span>
+        <span>
+          ·总额
+          <font color="white">
+            {{info.totalMount | currency ''}}
+          </font>
+        </span>
+        <span>
+          ·剩余
+          <font color="white">
+            {{info.lastAmount | currency ''}}
+          </font>
+        </span>
       </div>
     </div>
 
@@ -74,11 +84,11 @@
             <span>亿元级专家团</span>
           </div>
           <div class="limit width_full o_h">
-            <span>开启日期&nbsp&nbsp2016/10/27</span>
-            <span>结束日期&nbsp&nbsp2016/11/07</span>
-            <span>购买金额&nbsp&nbsp1000.00元起购</span>
+            <span>开启日期&nbsp&nbsp{{info.Sdate}}</span>
+            <span>结束日期&nbsp&nbsp -</span>
+            <span>购买金额&nbsp&nbsp{{info.minSubAmount | currency ''}}元起购</span>
             <span>购买限额&nbsp&nbsp不限</span>
-            <span>购买时间&nbsp&nbsp2016/10/23nbsp至&nbsp2016/10/26</span>
+            <span>购买时间&nbsp&nbsp{{info.SubSdate}}&nbsp至&nbsp{{info.SubEdate}}</span>
             <span>資產類型應收賬款、債權</span>
             <span>贖回說明投資人一旦購買成功，則在產品未到期前不得贖回</span>
             <span>費用說明免手續費，美易理財目前為用戶支付買入與退出產生的手續費</span>
@@ -92,28 +102,39 @@
       <!-- 购买记录 -->
       <div class="record_content width_full o_h"
         :class="this.showTabs===2?'record_content':'module_hide'">
-        <ul>
+        <ul v-for="sl in info.subList | orderBy 'subDate' -1" track-by="$index">
           <li>
-            <span>2016.10.21  15:10:36</span>
-            <span>156****3355</span>
+            <span>{{sl.subDate | dataFilter 'yyyy.MM.dd HH:mm:ss'}}</span>
+            <span>{{sl.userPhone | phoneFilter}}</span>
           </li>
           <li>
-            <span>1000.00</span>
+            <span>{{sl.subAmount | currency ''}}</span>
           </li>
         </ul>
       </div>
     </div>
   </div>
-  <div class="buy_btn blue_bg"
-    v-link="{path: '/buy', replace: true}">
+  <div class="buy_btn blue_bg" @click="doBuy(info)">
     <span>马上购买</span>
   </div>
 </template>
 
 <script>
 import $ from 'zepto'
+import Vue from 'vue'
 import {api} from '../../util/service'
+import {dateFormat} from '../../util/util'
 import VLayer from '../../components/PullToRefreshLayer'
+
+Vue.filter('dataFilter', function (value, format) {
+  return dateFormat(new Date(value), format)
+})
+
+Vue.filter('phoneFilter', function (value) {
+  var reg = /^(\d{3})\d{4}(\d{4})$/
+  value = value.replace(reg, '$1****$2')
+  return value
+})
 
 export default {
   ready () {
@@ -123,7 +144,8 @@ export default {
   },
   data () {
     return {
-      showTabs: 1
+      showTabs: 1,
+      info: []
     }
   },
   methods: {
@@ -152,16 +174,31 @@ export default {
           'x-token': token
         }
       })
-      .then(({data: data})=>{
-        console.log(data)
-        // if (code === 1) {
-        //   this.userAccount = data.UserAccount
-        // }
-        // else {
-        //   $.toast(msg)
-        // }
+      .then(({data: {code, data, msg}})=>{
+        if (code === 1) {
+          this.info = data
+        }
+        else {
+          $.toast(msg)
+        }
       }).catch((e)=>{
         console.error('获取主页主要信息失败:' + e)
+      })
+    },
+    /*
+     * 购买跳转
+     */
+    doBuy (info) {
+      // 跳转至模拟收益
+      this.$route.router.go({
+        name: 'buy',
+        query: {
+          pid: info.Pid,
+          name: info.NAME,
+          day: info.exDays,
+          er: info.exReturn
+        },
+        replace: false
       })
     }
   },

@@ -23,6 +23,7 @@ export default function (router) {
       }
     },
     '/buy': {
+      name: 'buy',
       component (resolve) {
         require(['./views/home/buy'], resolve)
       }

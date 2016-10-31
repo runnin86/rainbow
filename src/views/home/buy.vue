@@ -12,11 +12,11 @@
     <div class="condition_little">
       <ul>
         <li>
-          <span>中盛阳光001彩红计划</span>
+          <span>{{name}}</span>
         </li>
         <li>
-          <span>预期收益率&nbsp&nbsp30%</span>
-          <span>周期&nbsp&nbsp10天</span>
+          <span>预期收益率&nbsp&nbsp{{exReturn}}%</span>
+          <span>周期&nbsp&nbsp{{day}}天</span>
         </li>
       </ul>
     </div>
@@ -29,10 +29,14 @@
 
     <!-- 金额input -->
     <div class="amount">
-      <span>需<font>{{message * 1000}}</font>元</span>
+      <span v-if="num>0">需<font>{{num * 1000}}</font>元</span>
     </div>
     <div class="number">
-      <input type="text" class="number_input" v-model="message">
+      <input v-model="num"
+        type="number" min=1
+        class="number_input"
+        onKeyPress="if(event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;"
+        onKeyUp="this.value=this.value.replace(/\D/g,'')"/>
     </div>
 
     <!-- 起购金额限制 -->
@@ -47,27 +51,100 @@
     </div> -->
 
     <!-- 付款按钮 -->
-    <div class="payment_btn">
+    <div class="payment_btn" @click="payOrder()"
+      :style="{'background-color': (paying ? '#999999' : '#005cac')}">
       <span>付款</span>
     </div>
   </div>
 </template>
 
 <script>
-  import $ from 'zepto'
+import $ from 'zepto'
+import pingpp from 'pingpp-js'
+import {api} from '../../util/service'
 
-  export default {
-    ready () {
-      $.init()
-    },
-    data () {
-      return {
-        message: 1
+export default {
+  ready () {
+    $.init()
+  },
+  data () {
+    return {
+      paying: false,
+      num: 1,
+      pid: this.$route.query.pid,
+      name: this.$route.query.name,
+      day: this.$route.query.day,
+      exReturn: this.$route.query.er
+    }
+  },
+  methods: {
+    /*
+     * 支付
+     */
+    payOrder () {
+      if (this.paying) {
+        // 若正在支付则返回
+        return
       }
-    },
-    methods: {
+      let openid = window.localStorage.getItem('rbOpenid')
+      $.showIndicator()
+      this.paying = true
+      let token = window.localStorage.getItem('rbToken')
+      this.$http.post(api.buy, {
+        pid: this.pid,
+        num: this.num,
+        openid: openid
+      }, {
+        headers: {
+          'x-token': token
+        }
+      })
+      .then(({data: {code, data, msg}})=>{
+        if (code === 1) {
+          if (data.paytype === 'wx_pub') {
+            let payResult = false
+            pingpp.createPayment(data.charge, function (result, err) {
+              if (result === 'success') {
+                // 只有微信公众账号 wx_pub 支付成功的结果会在这里返回，其他的支付结果都会跳转到 extra 中对应的 URL。
+                $.toast('支付成功!')
+                payResult = true
+              }
+              else if (result === 'fail') {
+                // charge 不正确或者微信公众账号支付失败时会在此处返回
+                $.toast('支付失败!')
+              }
+              else if (result === 'cancel') {
+                // 微信公众账号支付取消支付
+                $.toast('支付取消!')
+              }
+            })
+            // 在支付完成后做操作
+            setTimeout(function () {
+              if (payResult) {
+                this.$root.back()
+              }
+            }.bind(this), 2000)
+          }
+          else {
+            // 账户金额支付
+            $.toast(msg)
+            setTimeout(function () {
+              this.$root.back()
+            }.bind(this), 2000)
+          }
+        }
+        else {
+          $.toast(msg)
+        }
+      }).catch((e)=>{
+        console.error('付款提交失败:' + e)
+      }).finally(()=>{
+        $.hideIndicator()
+        this.paying = false
+      })
     }
   }
+}
 </script>
 
 <style scoped>
@@ -207,7 +284,6 @@
   margin: 1rem auto;
   border-radius: 0.1rem;
   height: 2.45rem;
-  background-color: #005cac;
   -webkit-box-shadow:0 6px 4px #dbdbdb;
   -moz-box-shadow:0 6px 4px #dbdbdb;
   box-shadow:0 6px 4px #dbdbdb;
