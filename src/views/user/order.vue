@@ -27,8 +27,9 @@
     <!-- 专家操盘记录 -->
     <div class="record">
       <span>专家操盘记录</span>
-      <span>上传日期&nbsp2016/10/27&nbsp11:22</span>
-      <!-- <img src=""> -->
+      <!-- <span>上传日期&nbsp2016/10/27&nbsp11:22</span> -->
+      <img v-for="ig in order.operateRecords | orderBy 'sdateTime' -1" track-by="$index"
+        :src="'http://img.zqsml.com/sublott/'+ig.picUrl">
     </div>
   </div>
 </template>
@@ -64,7 +65,6 @@ export default {
       .then(({data: {code, data, msg}})=>{
         if (code === 1) {
           this.order = data
-          console.log(data.operateRecords)
         }
         else {
           $.toast(msg)
