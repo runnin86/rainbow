@@ -81,7 +81,8 @@ export default {
       upass: null,
       alipayid: null,
       protocol: true,
-      submitBtn: false
+      submitBtn: false,
+      code: this.$route.query.code
     }
   },
   methods: {
