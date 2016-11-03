@@ -53,7 +53,8 @@
           <input type="checkbox" class="agreement" v-model="protocol" name="agreement" id="agreement">
           <span for="agreement">已阅读并同意<font color="#005cac">《用户协议》</font></span>
         </div>
-        <div class="reg_btn blue_bg" @click="register()">
+        <div class="reg_btn blue_bg" @click="register()"
+          :style="{backgroundColor: (submitBtn ? '#1a6be4' : '#c8c9cb')}">
           <span>注册</span>
         </div>
       </div>
@@ -75,6 +76,8 @@ export default {
       userPhone: window.localStorage.getItem('rbPhone') ? window.localStorage.getItem('rbPhone') : '',
       password: '',
       loginSubmit: false,
+      uname: null,
+      uphone: null,
       upass: null,
       alipayid: null,
       protocol: true,
@@ -131,8 +134,7 @@ export default {
         $.toast('请输入手机号')
         return
       }
-      else if (!(/^1[34578]\d{9}$/.test(this.uphone)))
-      {
+      if (!(/^1[34578]\d{9}$/.test(this.uphone))) {
         $.toast('请输入正确的手机号')
         return
       }
@@ -140,8 +142,7 @@ export default {
         $.toast('请输入支付宝账号')
         return
       }
-      else if (!(/^1[34578]\d{9}$/.test(this.alipayid) || (/^[_\.0-9a-z-]+@([0-9a-z][0-9a-z-]+\.){1,4}[a-z]{2,3}$/.test(this.alipayid))))
-      {
+      if (!(/^1[34578]\d{9}$/.test(this.alipayid) || (/^[_\.0-9a-z-]+@([0-9a-z][0-9a-z-]+\.){1,4}[a-z]{2,3}$/.test(this.alipayid)))) {
         $.toast('请输入正确的付宝账号')
         return
       }
@@ -158,6 +159,30 @@ export default {
         return
       }
       this.submitBtn = false
+      // 提交注册
+      this.$http.post(api.register, {
+        uname: this.uname,
+        upass: this.upass,
+        uphone: this.uphone,
+        alipayid: this.alipayid
+      })
+      .then(({data: {code, msg}})=>{
+        $.toast(msg)
+        setTimeout(() => {
+          if (code === 1) {
+            this.uname = null
+            this.uphone = null
+            this.upass = null
+            this.alipayid = null
+            this.showTabs = 1
+          }
+          else {
+            this.submitBtn = true
+          }
+        }, 1500)
+      }).catch((e)=>{
+        console.error(this.from + '用户注册失败:' + e)
+      })
     }
   },
   watch: {
@@ -169,6 +194,20 @@ export default {
     'forgetPhone,vCode,newPwd': {
       handler: function (newVal, oldVal) {
         this.forgetSubmit = this.forgetPhone && this.vCode && this.newPwd
+      }
+    },
+    '[uname,uphone,upass,alipayid,protocol]': {
+      handler: function (newVal, oldVal) {
+        let flag = true
+        newVal.map((v, k)=>{
+          if (v === null || v === '' || !v) {
+            flag = false
+            return
+          }
+        })
+        // 注册按钮是否灰化
+        this.submitBtn = flag
+        // console.log(flag)
       }
     }
   }
