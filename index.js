@@ -13,7 +13,7 @@ app.get(['/', '/reg', '/recharge/:state', '/login', '/oauth'], function (req, re
   res.sendFile('index.html', { root: path.join(__dirname, './dist') })
 })
 
-var server = app.listen(3030, '0.0.0.0', function () {
+var server = app.listen(3040, '0.0.0.0', function () {
 
   var host = server.address().address
   var port = server.address().port

@@ -93,7 +93,7 @@ export default {
   },
   methods: {
     doWT () {
-      $.toast('敬请期待!')
+      $.toast('当前周期未结束')
     },
     /*
      * 刷新
