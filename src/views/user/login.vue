@@ -4,11 +4,6 @@
   <meta name = "format-detection" content = "telephone=no">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <div class="content" transition="">
-    <!-- 顶部操作栏 -->
-    <div class="header blue_bg width_full">
-      <img src="/img/rainbow/return-btn.png"
-        v-link="{path: '/home', replace: true}">
-    </div>
 
     <!-- 登录/注册 -->
     <div class="login_box white_bg text_color">
@@ -51,7 +46,11 @@
         </div>
         <div class="agreement_box">
           <input type="checkbox" class="agreement" v-model="protocol" name="agreement" id="agreement">
-          <span for="agreement">已阅读并同意<font color="#005cac">《用户协议》</font></span>
+          <span for="agreement">已阅读并同意
+            <font color="#005cac"
+              v-link="{path: '/agreement', replace: true}">
+            《用户协议》</font>
+          </span>
         </div>
         <div class="reg_btn blue_bg" @click="register()"
           :style="{backgroundColor: (submitBtn ? '#1a6be4' : '#c8c9cb')}">

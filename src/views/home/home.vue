@@ -6,8 +6,8 @@
   <div class="content" transition="" v-pull-to-refresh="refresh">
     <v-layer></v-layer>
     <!-- 顶部操作栏 -->
-    <div class="header width_full">
-      <span class="header_title blue_bg width_full">{{info.NAME}}</span>
+    <div class="header width_full blue_bg">
+      <span class="header_title width_full">{{info.NAME}}</span>
       <img class="user_photo" src="/img/rainbow/user_photo_round.png"
         v-link="{path: '/user', replace: true}">
     </div>
@@ -90,12 +90,11 @@
             <span>购买金额&nbsp&nbsp{{info.minSubAmount | currency ''}}元起购</span>
             <span>购买限额&nbsp&nbsp不限</span>
             <span>购买时间&nbsp&nbsp{{info.SubSdate}}&nbsp至&nbsp{{info.SubEdate}}</span>
-            <span>資產類型應收賬款、債權</span>
-            <span>贖回說明投資人一旦購買成功，則在產品未到期前不得贖回</span>
-            <span>費用說明免手續費，美易理財目前為用戶支付買入與退出產生的手續費</span>
-            <span>產品協議<font color="#3a71b5">【查看產品協議】</font></span>
-            <span style="margin-top: 1.6rem;">「新手專享」系列是國美金融旗下美易理財為新用戶專門設立的專享投資產品，「新手專享」系列資產項目來源於商業保理公司提供的供應鏈應收賬款債權、實體企業的債權轉讓，還款來源真實可靠。「新手專享」系列不限投資次數，但每人累計投資金額不超過10000元。該系列產品起投金額為100元，100元遞增，當項目剩餘可投餘額小於100元時，需要一次性申購全部餘額。</span>
-            <span style="margin-top: 1.6rem; margin-bottom: 4rem;">平台免責聲明：美易理財作為交易服務平台進行信息發佈，不對任何投資人及/或任何交易提供任何擔保,無論是明示、默示或法定的。美易理財平台提供的各種信息及資料僅供參考,投資人應依其獨立判斷做出決策。投資人據此進行投資交易的,產生的投資風險由投資人自行承擔。</span>
+            <span>赎回说明&nbsp&nbsp投资人一旦购买成功，则在产品未到期前不得赎回。</span>
+            <span>费用说明&nbsp&nbsp免手续费，终生阳光目前为用户支付买入与退出产生的手续费。</span>
+            <span>产品玩法<font color="#3a71b5" v-link="{path: '/play', replace: true}">【查看产品玩法】</font></span>
+            <span style="margin-top: 1.6rem;">[彩红计划]是中盛阳光（北京）科技有限公司近日推出的一款"周期短"、"收益高"的竞彩合买式投资产品。公司拥有多位国内顶尖知名竞彩分析师，方案准确率均保持在92.8%以上，最高历史单注方案回报率高达700%。[彩红计划]产品最高收益为30%，最高损失额度为30%，不限投资次数，但每人累计购买金额不超过产品总额。该产品按份出售，每份1000元，可购买多份。</span>
+            <span style="margin-top: 1.6rem; margin-bottom: 4rem;">平台免责声明：中盛阳光平台所发布的竞彩合买产品均有最高收益限制和最低返还比例，购买人应依其独立判断做出决策。</span>
           </div>
         </div>
       </div>

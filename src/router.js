@@ -57,6 +57,16 @@ export default function (router) {
       component (resolve) {
         require(['./views/user/complete'], resolve)
       }
+    },
+    '/agreement': {
+      component (resolve) {
+        require(['./views/user/agreement'], resolve)
+      }
+    },
+    '/play': {
+      component (resolve) {
+        require(['./views/home/play'], resolve)
+      }
     }
   })
 
