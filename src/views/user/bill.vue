@@ -48,7 +48,7 @@
         </ul>
         <div v-for="pl in profitList | orderBy 'SubDate' -1" track-by="$index">
           <ul>
-            <li>{{pl.Profit*pl.SubAmount | currency ''}}</li>
+            <li>{{pl.Profit | currency ''}}</li>
             <li>{{pl.SubDate | dataFilter 'MM/dd'}}</li>
             <li>{{pl.Name}}</li>
           </ul>

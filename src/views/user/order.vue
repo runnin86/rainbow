@@ -18,7 +18,7 @@
       <span>
         产品收益(元)
         <font color="white">
-        &nbsp{{order.acProfit * order.totalMount | currency ''}}&nbsp
+        &nbsp{{order.acProfit/100 * order.totalMount | currency ''}}&nbsp
         </font>
         剩余{{order.lastdays}}天
       </span>
