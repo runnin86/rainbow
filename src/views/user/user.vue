@@ -34,7 +34,7 @@
       </div>
       <div class="withdrawal_btn">
         <!-- <span v-link="{path: '/withdrawal', replace: true}"> -->
-        <span @click="doWT()">
+        <span v-link="{path: '/withdrawal', replace: true, query: {pageTransition: 'bounce'}}">
           提现
         </span>
       </div>

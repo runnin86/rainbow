@@ -14,7 +14,7 @@
     </div>
     <div class="complete_text">
       <span>提现成功</span>
-      <span>stonecookpapa@163.com&nbsp-&nbsp880.00元</span>
+      <span>{{user.userAlipayId}}&nbsp-&nbsp{{money | currency '¥'}}元</span>
       <span>3个工作日内到账</span>
     </div>
   </div>
@@ -29,7 +29,8 @@
     },
     data () {
       return {
-        message: 1
+        money: this.$route.query.m,
+        user: JSON.parse(window.localStorage.getItem('rbUser'))
       }
     },
     methods: {

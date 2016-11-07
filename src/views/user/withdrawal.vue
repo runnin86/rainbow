@@ -3,7 +3,7 @@
   <!-- 防止ios自动获取电话号码 -->
   <meta name = "format-detection" content = "telephone=no">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <div class="content" transition="">
+  <div class="content" :transition="pageTransition">
     <!-- 顶部操作栏 -->
     <div class="header">
       <img src="/img/rainbow/return-btn.png"
@@ -11,40 +11,129 @@
     </div>
     <div class="withdrawal_header blue_bg">
       <span>可提现(元)</span>
-      <span>880.00</span>
+      <span>
+        {{userAccount ? userAccount : 0}}
+      </span>
     </div>
     <div class="zfb_box white_bg">
       <img src="/img/rainbow/zfb-icon.png">
-      <span>stonecoolpapa@163.com</span>
+      <span>{{user.userAlipayId}}</span>
     </div>
     <div class="mark">
       <span>请确认上方支付宝账号正确无误后再进行提现!</span>
     </div>
     <div class="amount">
-      <input type="text" placeholder="请输入提现金额，提取金额仅能为整数">
+      <input v-model="withdrawMoney" class="el_withdrawals_balance_input"
+        placeholder="请输入提现金额，提取金额仅能为整数" type="number" min=10 max={{userAccount}}
+        onKeyPress="if(event.keyCode < 48 || event.keyCode > 57) event.returnValue = false;"
+        onKeyUp="this.value=this.value.replace(/\D/g,'')"/>
     </div>
-    <div class="withdrawal_btn"
-      v-link="{path: '/complete', replace: true}">
+    <div class="withdrawal_btn" @click="submitWithdraw()">
       <span>确定</span>
     </div>
   </div>
 </template>
 
 <script>
-  import $ from 'zepto'
+import $ from 'zepto'
+import {api} from '../../util/service'
 
-  export default {
-    ready () {
-      $.init()
+export default {
+  ready () {
+    $.init()
+    if (this.user) {
+      // 获取账户信息
+      this.getUserAccount()
+    }
+  },
+  data () {
+    return {
+      pageTransition: this.$route.query.pageTransition,
+      user: JSON.parse(window.localStorage.getItem('rbUser')),
+      userAccount: '-',
+      withdrawMoney: null
+    }
+  },
+  methods: {
+    /*
+     * 获取账户
+     */
+    getUserAccount () {
+      let token = window.localStorage.getItem('rbToken')
+      this.$http.get(api.userCenter, {}, {
+        headers: {
+          'x-token': token
+        }
+      })
+      .then(({data: {data, code, msg}})=>{
+        if (code === 1) {
+          this.userAccount = data.UserAccount
+        }
+        else {
+          $.toast(msg)
+        }
+      }).catch((e)=>{
+        console.error('获取账户信息失败:' + e)
+      })
     },
-    data () {
-      return {
-        message: 1
+    /*
+     * 提交提现
+     */
+    submitWithdraw () {
+      if (!this.user.userAlipayId) {
+        $.toast('账户支付宝账户为空,无法提现!')
+        return
       }
-    },
-    methods: {
+      if (this.withdrawMoney < 10) {
+        $.toast('提现金额必须大于10元!')
+        this.withdrawMoney = null
+        return
+      }
+      if (this.withdrawMoney > this.userAccount) {
+        $.toast('提现金额大于账户余额!')
+        this.withdrawMoney = null
+        return
+      }
+      // 提交请求
+      let token = window.localStorage.getItem('rbToken')
+      this.$http.post(api.withdraw, {
+        wamount: this.withdrawMoney,
+        fee: 0
+      }, {
+        headers: {
+          'x-token': token
+        }
+      })
+      .then(({data: {code, msg}})=>{
+        if (code === 1) {
+          this.$set('pageTransition', 'fade')
+          setTimeout(function () {
+            this.$route.router.go({path: '/complete?m=' + (this.withdrawMoney), query: { pageTransition: 'bounce' }, replace: false})
+          }.bind(this), 100)
+        }
+        else {
+          $.toast(msg)
+        }
+      }).catch((e)=>{
+        console.error('提现失败:' + e)
+      })
+    }
+  },
+  watch: {
+    'withdrawMoney': {
+      handler: function (newVal, oldVal) {
+        if (newVal * 0.03 < 1) {
+          this.poundage = 1
+        }
+        else {
+          this.poundage = newVal * 0.03
+          // 手续费向上取整
+          this.poundage = Math.ceil(this.poundage)
+        }
+      }
     }
   }
+}
 </script>
 
 <style scoped>

@@ -62,11 +62,15 @@
           <li>日期</li>
           <li>状态</li>
         </ul>
-        <!-- <ul>
-          <li>880.00</li>
-          <li>10/17</li>
-          <li>提现申请已提交</li>
-        </ul> -->
+        <div v-for="w in withdrawList | orderBy 'withdraw_date' -1" track-by="$index">
+          <ul>
+            <li>{{w.wMoney | currency ''}}</li>
+            <li>{{w.wDate | dataFilter 'MM/dd'}}</li>
+            <li>
+              {{w.wStatus===0?'审核中':(w.wStatus===1?'成功':'失败')}}
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -112,6 +116,7 @@ export default {
           this.profitList = data.profit
           this.purchaseList = data.purchase
           this.withdrawList = data.withdraw
+          console.log(data.withdraw)
         }
         else {
           $.toast(msg)
